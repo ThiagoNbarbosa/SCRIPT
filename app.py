@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 import os
 import tempfile
-from interface import selecionar_pasta_web, selecionar_modelo_web
+from interface import selecionar_pasta, selecionar_modelo
 from word_utils import inserir_conteudo
 from werkzeug.utils import secure_filename
 import zipfile
