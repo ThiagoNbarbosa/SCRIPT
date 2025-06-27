@@ -77,35 +77,60 @@ def upload_fotos():
 
 def processar_estrutura_pastas(pasta_raiz):
     conteudo = []
+    titulos_adicionados = set()
     
+    # Obter todos os arquivos de imagem
+    arquivos_imagens = []
     for root, dirs, files in os.walk(pasta_raiz):
-        if root == pasta_raiz:
-            dirs.sort(key=lambda x: (ORDEM_PASTAS.index(x) if x in ORDEM_PASTAS else len(ORDEM_PASTAS), x))
+        for file in files:
+            if file.lower().endswith(('.png', '.jpg', '.jpeg')):
+                arquivos_imagens.append(os.path.join(root, file))
+    
+    arquivos_imagens.sort(key=os.path.getctime)
+    
+    # Processar cada arquivo e extrair estrutura do nome
+    for imagem_path in arquivos_imagens:
+        nome_arquivo = os.path.basename(imagem_path)
         
-        path_parts = os.path.relpath(root, pasta_raiz).split(os.sep)
-        nivel = len(path_parts)
+        # Extrair partes do nome do arquivo
+        # Formato esperado: PROJETO_-_AREA_-_SUBAREA_-_DETALHES_arquivo.jpg
+        partes = nome_arquivo.split('_-_')
         
-        if nivel == 1 and path_parts[0] != '.':
-            conteudo.append(path_parts[0])
-        elif nivel == 2:
-            conteudo.append(f"»{path_parts[1]}")
-        elif nivel == 3:
-            conteudo.append(f"»»{path_parts[2]}")
-        elif nivel > 3:
-            conteudo.append(f"»»»- {path_parts[-1]}")
+        if len(partes) >= 4:
+            # Remover extensão da última parte
+            ultima_parte = partes[-1]
+            if '.' in ultima_parte:
+                partes[-1] = ultima_parte.rsplit('.', 1)[0]
+            
+            # Área principal (ex: "Area externa 1")
+            if len(partes) >= 2:
+                area_principal = partes[1].replace('_', ' ')
+                if area_principal not in titulos_adicionados:
+                    conteudo.append(area_principal)
+                    titulos_adicionados.add(area_principal)
+            
+            # Subárea (ex: "Pintura acrilica")
+            if len(partes) >= 3:
+                subarea = partes[2].replace('_', ' ')
+                titulo_subarea = f"»{subarea}"
+                if titulo_subarea not in titulos_adicionados:
+                    conteudo.append(titulo_subarea)
+                    titulos_adicionados.add(titulo_subarea)
+            
+            # Detalhes (ex: "Detalhes" ou "Vista ampla")
+            if len(partes) >= 4:
+                detalhes = partes[3].replace('_', ' ')
+                titulo_detalhes = f"»»{detalhes}"
+                if titulo_detalhes not in titulos_adicionados:
+                    conteudo.append(titulo_detalhes)
+                    titulos_adicionados.add(titulo_detalhes)
         
-        arquivos_imagens = [
-            os.path.join(root, file)
-            for file in files
-            if file.lower().endswith(('.png', '.jpg', '.jpeg'))
-        ]
-        arquivos_imagens.sort(key=os.path.getctime)
-        
-        for imagem_path in arquivos_imagens:
-            conteudo.append({"imagem": imagem_path})
-        
-        if arquivos_imagens:  # Só adiciona quebra de página se houver imagens
-            conteudo.append({"quebra_pagina": True})
+        # Adicionar a imagem
+        conteudo.append({"imagem": imagem_path})
+    
+    # Adicionar quebra de página no final se houver imagens
+    if arquivos_imagens:
+        conteudo.append({"quebra_pagina": True})
     
     return conteudo
 
