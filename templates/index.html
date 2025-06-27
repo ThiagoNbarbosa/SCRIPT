@@ -1,157 +1,467 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Relatórios Fotográficos</title>
+    <title>MAFFENG - Gerador de Relatórios Fotográficos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 2px dashed #ddd;
-            border-radius: 5px;
-            background: #fafafa;
-            cursor: pointer;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        input[type="file"]:hover {
-            border-color: #007bff;
-            background: #f0f8ff;
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 20px;
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:hover {
-            background-color: #0056b3;
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255,255,255,0.03) 2px,
+                rgba(255,255,255,0.03) 4px
+            );
+            animation: slide 20s linear infinite;
         }
-        .alert {
-            padding: 15px;
+
+        @keyframes slide {
+            0% { transform: translateX(-50px) translateY(-50px); }
+            100% { transform: translateX(50px) translateY(50px); }
+        }
+
+        .logo {
+            width: 180px;
+            height: auto;
             margin-bottom: 20px;
-            border-radius: 5px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 2;
         }
-        .alert-success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+
+        .header h1 {
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
         }
-        .alert-error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 300;
+            position: relative;
+            z-index: 2;
         }
+
+        .form-container {
+            padding: 50px 40px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1rem;
+        }
+
+        .form-group i {
+            color: #667eea;
+            margin-right: 8px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-upload-area {
+            position: relative;
+            border: 3px dashed #cbd5e0;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #f7fafc 0%, #edf2f7 100%);
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(45deg, #edf2f7 0%, #e2e8f0 100%);
+            transform: scale(1.02);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #48bb78;
+            background: linear-gradient(45deg, #f0fff4 0%, #c6f6d5 100%);
+        }
+
+        input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
         .help-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+            margin-top: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border-radius: 12px;
+            border-left: 4px solid #38b2ac;
         }
+
+        .help-text strong {
+            color: #2c7a7b;
+        }
+
         .file-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            font-size: 14px;
+            margin-top: 15px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-radius: 12px;
+            border-left: 4px solid #48bb78;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            border-left: 4px solid;
+            animation: slideIn 0.5s ease;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-left-color: #48bb78;
+            color: #2f855a;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            border-left-color: #e53e3e;
+            color: #c53030;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo {
+                width: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📸 Gerador de Relatórios Fotográficos</h1>
+        <div class="header">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yMCA4MEw0MCAyMEw2MCA2MEw4MCAyMEwxMDAgODBIMTIwTDE0MCAyMEwxNjAgNjBMMTgwIDIwTDIwMCA4MEgyMFoiIGZpbGw9IiNEQzM1MzUiLz4KPHRLEHT0gZm9udC1mYW1pbHk9IkludGVyLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjREMzNTM1Ij5NQUZGRU5HPC90ZXh0Pgo8dGV4dCB4PSIyMCIgeT0iOTUiIGZvbnQtZmFtaWx5PSJJbnRlciwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzM3NEE1MSI+RW5nZW5oYXJpYSBlIE1hbnV0ZW7Dp8OjbzwvdGV4dD4KPC9zdmc+" alt="MAFFENG Logo" class="logo">
+            <h1>Gerador de Relatórios Fotográficos</h1>
+            <p>Engenharia e Manutenção Profissional</p>
+        </div>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-success">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="/upload_fotos" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="nome_projeto">Nome do Projeto:</label>
-                <input type="text" id="nome_projeto" name="nome_projeto" required 
-                       placeholder="Ex: São Paulo - Edifício Central">
-            </div>
-
-            <div class="form-group">
-                <label for="modelo">Selecione o Modelo:</label>
-                <select id="modelo" name="modelo" required>
-                    <option value="">Escolha um modelo...</option>
-                    {% for modelo in modelos %}
-                        <option value="{{ modelo }}">{{ modelo.replace('.docx', '') }}</option>
+        <div class="form-container">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> {{ message }}
+                        </div>
                     {% endfor %}
-                </select>
-            </div>
+                {% endif %}
+            {% endwith %}
 
-            <div class="form-group">
-                <label for="pasta_fotos">Selecione a Pasta de Fotos:</label>
-                <input type="file" id="fotos" name="pasta_fotos" 
-                       webkitdirectory directory multiple accept="image/*" 
-                       required>
-                <div class="help-text">
-                    💡 <strong>Dica:</strong> Selecione uma pasta que contenha suas fotos organizadas em subpastas.
-                    <br>• A estrutura de pastas será mantida no relatório
-                    <br>• Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg
+            <form method="POST" action="/upload_fotos" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="nome_projeto">
+                        <i class="fas fa-building"></i>Nome do Projeto
+                    </label>
+                    <input type="text" id="nome_projeto" name="nome_projeto" required 
+                           placeholder="Ex: São Paulo - Edifício Central">
                 </div>
-                <div id="file-count" class="file-info" style="display: none;"></div>
-            </div>
 
-            <button type="submit" class="btn">🚀 Gerar Relatório</button>
-        </form>
+                <div class="form-group">
+                    <label for="modelo">
+                        <i class="fas fa-file-word"></i>Selecione o Modelo
+                    </label>
+                    <select id="modelo" name="modelo" required>
+                        <option value="">Escolha um modelo...</option>
+                        {% for modelo in modelos %}
+                            <option value="{{ modelo }}">{{ modelo.replace('.docx', '') }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pasta_fotos">
+                        <i class="fas fa-folder-open"></i>Selecione a Pasta de Fotos
+                    </label>
+                    <div class="file-upload-area" id="upload-area">
+                        <input type="file" id="fotos" name="pasta_fotos" 
+                               webkitdirectory directory multiple accept="image/*" 
+                               required>
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <div class="upload-text">Clique ou arraste a pasta aqui</div>
+                        <div class="upload-subtext">Formatos aceitos: JPG, PNG, JPEG</div>
+                    </div>
+                    
+                    <div class="help-text">
+                        <i class="fas fa-lightbulb"></i>
+                        <strong>Dica:</strong> Selecione uma pasta que contenha suas fotos organizadas em subpastas.
+                        <br>• A estrutura de pastas será mantida no relatório
+                        <br>• Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg
+                    </div>
+                    <div id="file-count" class="file-info">
+                        <i class="fas fa-images"></i>
+                        <span id="file-text"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">
+                    <i class="fas fa-rocket"></i> Gerar Relatório Profissional
+                </button>
+            </form>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-magic feature-icon"></i>
+                    <div class="feature-title">Processamento Automático</div>
+                    <div class="feature-description">Organização automática das fotos seguindo a estrutura de pastas</div>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-pdf feature-icon"></i>
+                    <div class="feature-title">Relatórios Profissionais</div>
+                    <div class="feature-description">Documentos formatados profissionalmente com sua marca</div>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-clock feature-icon"></i>
+                    <div class="feature-title">Economia de Tempo</div>
+                    <div class="feature-description">Processo que levaria horas agora é feito em minutos</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('fotos').addEventListener('change', function(e) {
-            const fileCount = e.target.files.length;
-            const fileInfo = document.getElementById('file-count');
+        const fileInput = document.getElementById('fotos');
+        const uploadArea = document.getElementById('upload-area');
+        const fileCount = document.getElementById('file-count');
+        const fileText = document.getElementById('file-text');
 
-            if (fileCount > 0) {
-                fileInfo.style.display = 'block';
-                fileInfo.innerHTML = `📁 ${fileCount} arquivo(s) selecionado(s)`;
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            // Note: File drop for directories is complex and may not work in all browsers
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files.length;
+            
+            if (files > 0) {
+                fileCount.style.display = 'block';
+                fileText.innerHTML = `${files} arquivo(s) selecionado(s)`;
+                
+                // Add success animation
+                fileCount.style.animation = 'none';
+                setTimeout(() => {
+                    fileCount.style.animation = 'slideIn 0.3s ease';
+                }, 10);
             } else {
-                fileInfo.style.display = 'none';
+                fileCount.style.display = 'none';
             }
+        });
+
+        // Form validation enhancement
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const submitBtn = document.querySelector('.btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Relatório...';
+            submitBtn.disabled = true;
         });
     </script>
 </body>
