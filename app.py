@@ -77,36 +77,35 @@ def upload_fotos():
 
 def processar_estrutura_pastas(pasta_raiz):
     conteudo = []
-    
+
     for root, dirs, files in os.walk(pasta_raiz):
         if root == pasta_raiz:
             dirs.sort(key=lambda x: (ORDEM_PASTAS.index(x) if x in ORDEM_PASTAS else len(ORDEM_PASTAS), x))
-        
+
         path_parts = os.path.relpath(root, pasta_raiz).split(os.sep)
         nivel = len(path_parts)
-        
-        if nivel == 1 and path_parts[0] != '.':
+
+        if nivel == 1:
             conteudo.append(path_parts[0])
         elif nivel == 2:
             conteudo.append(f"»{path_parts[1]}")
         elif nivel == 3:
             conteudo.append(f"»»{path_parts[2]}")
-        elif nivel > 3:
+        else:
             conteudo.append(f"»»»- {path_parts[-1]}")
-        
+
         arquivos_imagens = [
             os.path.join(root, file)
             for file in files
             if file.lower().endswith(('.png', '.jpg', '.jpeg'))
         ]
         arquivos_imagens.sort(key=os.path.getctime)
-        
+
         for imagem_path in arquivos_imagens:
             conteudo.append({"imagem": imagem_path})
-        
-        if arquivos_imagens:  # Só adiciona quebra de página se houver imagens
-            conteudo.append({"quebra_pagina": True})
-    
+
+        conteudo.append({"quebra_pagina": True})
+
     return conteudo
 
 if __name__ == '__main__':
