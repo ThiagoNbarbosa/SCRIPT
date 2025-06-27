@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -99,7 +98,7 @@
 <body>
     <div class="container">
         <h1>📸 Gerador de Relatórios Fotográficos</h1>
-        
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -107,14 +106,14 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         <form method="POST" action="/upload_fotos" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="nome_projeto">Nome do Projeto:</label>
                 <input type="text" id="nome_projeto" name="nome_projeto" required 
                        placeholder="Ex: São Paulo - Edifício Central">
             </div>
-            
+
             <div class="form-group">
                 <label for="modelo">Selecione o Modelo:</label>
                 <select id="modelo" name="modelo" required>
@@ -124,20 +123,20 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div class="form-group">
-                <label for="fotos">Selecione as Fotos:</label>
-                <input type="file" id="fotos" name="fotos" multiple accept="image/*" required>
+                <label for="pasta_fotos">Selecione a Pasta de Fotos:</label>
+                <input type="file" id="pasta_fotos" name="pasta_fotos" 
+                       webkitdirectory directory multiple accept="image/*" 
+                       required>
                 <div class="help-text">
-                    💡 <strong>Dica:</strong> Para organizar automaticamente as fotos, nomeie os arquivos com prefixos:
-                    <br>• <code>externa_</code> para área externa
-                    <br>• <code>interna_</code> para área interna  
-                    <br>• <code>segundo_</code> para segundo piso
-                    <br>• Exemplo: <code>externa_fachada_01.jpg</code>
+                    💡 <strong>Dica:</strong> Selecione uma pasta que contenha suas fotos organizadas em subpastas.
+                    <br>• A estrutura de pastas será mantida no relatório
+                    <br>• Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg
                 </div>
                 <div id="file-count" class="file-info" style="display: none;"></div>
             </div>
-            
+
             <button type="submit" class="btn">🚀 Gerar Relatório</button>
         </form>
     </div>
@@ -146,7 +145,7 @@
         document.getElementById('fotos').addEventListener('change', function(e) {
             const fileCount = e.target.files.length;
             const fileInfo = document.getElementById('file-count');
-            
+
             if (fileCount > 0) {
                 fileInfo.style.display = 'block';
                 fileInfo.innerHTML = `📁 ${fileCount} arquivo(s) selecionado(s)`;

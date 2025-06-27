@@ -27,11 +27,12 @@ def index():
 
 @app.route('/upload_fotos', methods=['POST'])
 def upload_fotos():
-    if 'fotos' not in request.files:
-        flash('Nenhum arquivo selecionado')
+    # Verificar se uma pasta foi enviada
+    if 'pasta_fotos' not in request.files:
+        flash('Nenhuma pasta selecionada')
         return redirect(url_for('index'))
     
-    files = request.files.getlist('fotos')
+    files = request.files.getlist('pasta_fotos')
     modelo_selecionado = request.form.get('modelo')
     nome_projeto = request.form.get('nome_projeto', 'Projeto')
     
@@ -39,39 +40,24 @@ def upload_fotos():
         flash('Selecione um modelo')
         return redirect(url_for('index'))
     
-    # Criar diretório temporário para as fotos
+    # Criar diretório temporário mantendo a estrutura original
     pasta_fotos = os.path.join(UPLOAD_FOLDER, secure_filename(nome_projeto))
     os.makedirs(pasta_fotos, exist_ok=True)
     
-    # Salvar arquivos organizados por pasta
+    # Salvar arquivos mantendo a estrutura de pastas
     for file in files:
         if file.filename != '':
-            # Extrair estrutura de pastas do nome do arquivo
-            filename = secure_filename(file.filename)
+            # Usar o webkitRelativePath para manter a estrutura de pastas
+            relative_path = getattr(file, 'filename', '')
+            if hasattr(file, 'webkitRelativePath'):
+                relative_path = file.webkitRelativePath
             
-            # Se o arquivo tem estrutura de pasta no nome (separado por underscore)
-            if '_' in filename:
-                parts = filename.split('_')
-                if len(parts) >= 2:
-                    pasta_categoria = parts[0]
-                    subpasta = parts[1] if len(parts) > 2 else ''
-                    
-                    # Criar estrutura de pastas
-                    if pasta_categoria in ['externa', 'interna', 'segundo']:
-                        pasta_nome = f"- Área {pasta_categoria}" if pasta_categoria != 'segundo' else "- Segundo piso"
-                        pasta_destino = os.path.join(pasta_fotos, pasta_nome)
-                        
-                        if subpasta:
-                            pasta_destino = os.path.join(pasta_destino, f"- {subpasta.replace('_', ' ')}")
-                    else:
-                        pasta_destino = os.path.join(pasta_fotos, "- Outras")
-                else:
-                    pasta_destino = os.path.join(pasta_fotos, "- Geral")
-            else:
-                pasta_destino = os.path.join(pasta_fotos, "- Geral")
+            # Criar o caminho completo mantendo a estrutura
+            file_path = os.path.join(pasta_fotos, secure_filename(relative_path))
+            dir_path = os.path.dirname(file_path)
             
-            os.makedirs(pasta_destino, exist_ok=True)
-            file.save(os.path.join(pasta_destino, filename))
+            os.makedirs(dir_path, exist_ok=True)
+            file.save(file_path)
     
     # Gerar relatório
     modelo_path = os.path.join(MODELOS_FOLDER, modelo_selecionado)
