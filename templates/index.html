@@ -1,157 +1,315 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Relatórios Fotográficos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .gradient-text {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
+        .custom-file-upload {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
         }
-        .form-group {
-            margin-bottom: 20px;
+        .custom-file-upload:hover {
+            border-color: #667eea;
+            background-color: #f7fafc;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
+        .btn-gradient {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
         }
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 2px dashed #ddd;
-            border-radius: 5px;
-            background: #fafafa;
-            cursor: pointer;
-        }
-        input[type="file"]:hover {
-            border-color: #007bff;
-            background: #f0f8ff;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        .alert-error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        .help-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
-        }
-        .file-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            font-size: 14px;
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>📸 Gerador de Relatórios Fotográficos</h1>
+<body class="min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header com Logo -->
+        <div class="text-center mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-xl mb-6">
+                <div class="flex items-center justify-center mb-4">
+                    <img src="/static/logo.png" alt="MAFFENG Logo" class="h-12 w-auto mr-3" onerror="this.style.display='none'">
+                    <div>
+                        <h1 class="text-3xl font-bold gradient-text">📝 Gerador de Relatórios Fotográficos</h1>
+                        <p class="text-gray-600 text-sm mt-1">MAFFENG - Engenharia e Manutenção Profissional</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Mensagens Flash -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-success">{{ message }}</div>
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 shadow-md">
+                        {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="/upload_fotos" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="nome_projeto">Nome do Projeto:</label>
-                <input type="text" id="nome_projeto" name="nome_projeto" required 
-                       placeholder="Ex: São Paulo - Edifício Central">
-            </div>
-
-            <div class="form-group">
-                <label for="modelo">Selecione o Modelo:</label>
-                <select id="modelo" name="modelo" required>
-                    <option value="">Escolha um modelo...</option>
-                    {% for modelo in modelos %}
-                        <option value="{{ modelo }}">{{ modelo.replace('.docx', '') }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="pasta_fotos">Selecione a Pasta de Fotos:</label>
-                <input type="file" id="fotos" name="pasta_fotos" 
-                       webkitdirectory directory multiple accept="image/*" 
-                       required>
-                <div class="help-text">
-                    💡 <strong>Dica:</strong> Selecione uma pasta que contenha suas fotos organizadas em subpastas.
-                    <br>• A estrutura de pastas será mantida no relatório
-                    <br>• Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg
+        <!-- Formulário Principal -->
+        <form method="POST" action="/upload_fotos" enctype="multipart/form-data" class="space-y-6">
+            
+            <!-- Informações do Projeto -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">1</span>
+                    Informações do Projeto
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Agência</label>
+                        <input type="text" name="nome" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               placeholder="Ex: São Paulo - Edifício Central">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contrato</label>
+                        <input type="text" name="ctr" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               placeholder="Ex: 2025.7421.1507">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ordem de Serviço</label>
+                        <input type="text" name="os" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               placeholder="Ex: OS-2025-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Elaboração</label>
+                        <input type="date" name="data_elb" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
                 </div>
-                <div id="file-count" class="file-info" style="display: none;"></div>
             </div>
 
-            <button type="submit" class="btn">🚀 Gerar Relatório</button>
+            <!-- Informações da Dependência -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <span class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">2</span>
+                    Informações da Dependência
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Agência</label>
+                        <input type="text" name="ag" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               placeholder="Nome da agência">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Dependência</label>
+                        <input type="text" name="nome_dependencia" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               placeholder="Nome da dependência">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">UF</label>
+                        <select name="uf" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            <option value="">Selecione o estado...</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Relatório</label>
+                        <select name="tipo" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            <option value="">Selecione o tipo...</option>
+                            <option value="Preventivo">Preventivo</option>
+                            <option value="Corretivo">Corretivo</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+                        <input type="text" name="end" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               placeholder="Endereço completo da dependência">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Atendimento</label>
+                        <input type="date" name="data_att" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Responsáveis -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <span class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">3</span>
+                    Responsáveis
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsável da Dependência</label>
+                        <input type="text" name="resp_dep" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                               placeholder="Nome do responsável">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsável Técnico</label>
+                        <input type="text" name="resp_tec" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                               placeholder="Nome do responsável técnico">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seleção de Arquivos -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <span class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">4</span>
+                    Modelo e Fotos
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Selecione o Modelo</label>
+                        <select name="modelo" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                            <option value="">Escolha um modelo...</option>
+                            {% for modelo in modelos %}
+                                <option value="{{ modelo }}">{{ modelo.replace('.docx', '') }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📁 Selecione a Pasta de Fotos</label>
+                        <div class="custom-file-upload border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                            <input type="file" id="fotos" name="pasta_fotos" 
+                                   webkitdirectory directory multiple accept="image/*" 
+                                   required class="hidden">
+                            <label for="fotos" class="cursor-pointer">
+                                <div class="text-6xl mb-4">📂</div>
+                                <p class="text-lg font-medium text-gray-700 mb-2">Clique ou arraste a pasta aqui</p>
+                                <p class="text-sm text-gray-500">Formatos aceitos: JPG, PNG, JPEG</p>
+                            </label>
+                            <div id="file-count" class="mt-4 p-3 bg-blue-100 rounded-lg hidden">
+                                <p class="text-blue-800 font-medium"></p>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-start">
+                                <span class="text-blue-500 mr-2">💡</span>
+                                <div class="text-sm text-blue-800">
+                                    <p class="font-medium mb-1">Dica: Selecione uma pasta que contenha suas fotos organizadas em subpastas.</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs">
+                                        <li>A estrutura de pastas será mantida no relatório</li>
+                                        <li>Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Envio -->
+            <div class="text-center">
+                <button type="submit" 
+                        class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform transition duration-300 hover:scale-105">
+                    <span class="mr-2">🚀</span> Gerar Relatório Profissional
+                </button>
+            </div>
         </form>
+
+        <!-- Features Section -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
+                <div class="text-4xl mb-4">⚡</div>
+                <h4 class="font-bold text-gray-800 mb-2">Processamento Automático</h4>
+                <p class="text-sm text-gray-600">Organização sistemática das fotos seguindo a estrutura de pastas</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
+                <div class="text-4xl mb-4">📋</div>
+                <h4 class="font-bold text-gray-800 mb-2">Relatórios Profissionais</h4>
+                <p class="text-sm text-gray-600">Documentos formatados profissionalmente com sua marca</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
+                <div class="text-4xl mb-4">⏱️</div>
+                <h4 class="font-bold text-gray-800 mb-2">Economia de Tempo</h4>
+                <p class="text-sm text-gray-600">Processo que levaria horas agora é feito em minutos</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12">
+            <p class="text-white text-sm opacity-75">
+                DEV: Thiago Nascimento
+            </p>
+        </div>
     </div>
 
     <script>
         document.getElementById('fotos').addEventListener('change', function(e) {
             const fileCount = e.target.files.length;
-            const fileInfo = document.getElementById('file-count');
+            const fileCountDiv = document.getElementById('file-count');
+            const fileCountText = fileCountDiv.querySelector('p');
 
             if (fileCount > 0) {
-                fileInfo.style.display = 'block';
-                fileInfo.innerHTML = `📁 ${fileCount} arquivo(s) selecionado(s)`;
+                fileCountDiv.classList.remove('hidden');
+                fileCountText.textContent = `📁 ${fileCount} arquivo(s) selecionado(s)`;
             } else {
-                fileInfo.style.display = 'none';
+                fileCountDiv.classList.add('hidden');
             }
+        });
+
+        // Animar entrada dos cards
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.bg-white');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.6s ease';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 150);
+            });
         });
     </script>
 </body>

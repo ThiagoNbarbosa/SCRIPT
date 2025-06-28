@@ -6,6 +6,7 @@ from interface import selecionar_pasta, selecionar_modelo
 from word_utils import inserir_conteudo
 from werkzeug.utils import secure_filename
 import zipfile
+from docx import Document
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
@@ -34,7 +35,26 @@ def upload_fotos():
     
     files = request.files.getlist('pasta_fotos')
     modelo_selecionado = request.form.get('modelo')
-    nome_projeto = request.form.get('nome_projeto', 'Projeto')
+    
+    # Capturar todos os campos do formulário
+    campos = {
+        'nome': request.form.get('nome', ''),
+        'ctr': request.form.get('ctr', ''),
+        'os': request.form.get('os', ''),
+        'elb': 'Ygor Augusto Fernandes',  # Valor fixo
+        'data_elb': request.form.get('data_elb', ''),
+        'ag': request.form.get('ag', ''),
+        'nome_dependencia': request.form.get('nome_dependencia', ''),
+        'uf': request.form.get('uf', ''),
+        'tipo': request.form.get('tipo', ''),
+        'data_att': request.form.get('data_att', ''),
+        'end': request.form.get('end', ''),
+        'resp_dep': request.form.get('resp_dep', ''),
+        'resp_tec': request.form.get('resp_tec', ''),
+        'empresa': 'Ygor Augusto Fernandes'  # Valor fixo
+    }
+    
+    nome_projeto = campos['nome'] or 'Projeto'
     
     if not modelo_selecionado:
         flash('Selecione um modelo')
@@ -69,6 +89,10 @@ def upload_fotos():
     
     try:
         contador_imagens = inserir_conteudo(modelo_path, conteudo, arquivo_saida)
+        
+        # Substituir placeholders no documento gerado
+        substituir_placeholders(arquivo_saida, campos)
+        
         flash(f'Relatório gerado com sucesso! {contador_imagens} imagens inseridas.')
         return send_file(arquivo_saida, as_attachment=True, download_name=nome_arquivo_saida)
     except Exception as e:
@@ -107,6 +131,58 @@ def processar_estrutura_pastas(pasta_raiz):
         conteudo.append({"quebra_pagina": True})
 
     return conteudo
+
+def substituir_placeholders(documento_path, campos):
+    """Substitui os placeholders no documento Word pelos valores dos campos"""
+    doc = Document(documento_path)
+    
+    # Dicionário de mapeamento dos placeholders
+    placeholders = {
+        '{{nome}}': campos.get('nome', ''),
+        '{{ctr}}': campos.get('ctr', ''),
+        '{{os}}': campos.get('os', ''),
+        '{{elb}}': campos.get('elb', ''),
+        '{{data_elb}}': campos.get('data_elb', ''),
+        '{{ag}}': campos.get('ag', ''),
+        '{{nome_dependencia}}': campos.get('nome_dependencia', ''),
+        '{{uf}}': campos.get('uf', ''),
+        '{{tipo}}': campos.get('tipo', ''),
+        '{{data_att}}': campos.get('data_att', ''),
+        '{{end}}': campos.get('end', ''),
+        '{{resp_dep}}': campos.get('resp_dep', ''),
+        '{{resp_tec}}': campos.get('resp_tec', ''),
+        '{{empresa}}': campos.get('empresa', '')
+    }
+    
+    # Substituir placeholders em parágrafos
+    for paragrafo in doc.paragraphs:
+        for placeholder, valor in placeholders.items():
+            if placeholder in paragrafo.text:
+                paragrafo.text = paragrafo.text.replace(placeholder, valor)
+    
+    # Substituir placeholders em tabelas
+    for tabela in doc.tables:
+        for linha in tabela.rows:
+            for celula in linha.cells:
+                for placeholder, valor in placeholders.items():
+                    if placeholder in celula.text:
+                        celula.text = celula.text.replace(placeholder, valor)
+    
+    # Substituir placeholders em cabeçalhos e rodapés
+    for secao in doc.sections:
+        # Cabeçalho
+        for paragrafo in secao.header.paragraphs:
+            for placeholder, valor in placeholders.items():
+                if placeholder in paragrafo.text:
+                    paragrafo.text = paragrafo.text.replace(placeholder, valor)
+        
+        # Rodapé
+        for paragrafo in secao.footer.paragraphs:
+            for placeholder, valor in placeholders.items():
+                if placeholder in paragrafo.text:
+                    paragrafo.text = paragrafo.text.replace(placeholder, valor)
+    
+    doc.save(documento_path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
