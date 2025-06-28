@@ -8,44 +8,67 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .gradient-text {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #3b82f6, #06b6d4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .custom-file-upload {
-            border: 2px dashed #cbd5e0;
+            border: 2px dashed #64748b;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
         }
         .custom-file-upload:hover {
-            border-color: #667eea;
-            background-color: #f7fafc;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
         }
-        .btn-gradient {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             transition: all 0.3s ease;
         }
-        .btn-gradient:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4);
+        }
+        .card-dark {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        .input-dark {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            color: #e2e8f0;
+        }
+        .input-dark:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .input-dark::placeholder {
+            color: #94a3b8;
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+            backdrop-filter: blur(20px);
         }
     </style>
 </head>
 <body class="min-h-screen py-8 px-4">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <!-- Header com Logo -->
         <div class="text-center mb-8">
-            <div class="bg-white rounded-2xl p-6 shadow-xl mb-6">
-                <div class="flex items-center justify-center mb-4">
-                    <img src="/static/logo.png" alt="MAFFENG Logo" class="h-12 w-auto mr-3" onerror="this.style.display='none'">
+            <div class="header-gradient rounded-2xl p-8 shadow-2xl mb-6 border border-slate-600/30">
+                <div class="flex items-center justify-center mb-6">
+                    <img src="/static/logo.png" alt="MAFFENG Logo" class="h-16 w-auto mr-4" onerror="this.style.display='none'">
                     <div>
-                        <h1 class="text-3xl font-bold gradient-text">📝 Gerador de Relatórios Fotográficos</h1>
-                        <p class="text-gray-600 text-sm mt-1">MAFFENG - Engenharia e Manutenção Profissional</p>
+                        <h1 class="text-4xl font-bold gradient-text mb-2">📝 Gerador de Relatórios Fotográficos</h1>
+                        <p class="text-slate-300 text-lg">MAFFENG - Engenharia e Manutenção Profissional</p>
                     </div>
                 </div>
             </div>
@@ -55,7 +78,7 @@
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 shadow-md">
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-6 py-4 rounded-xl mb-6 shadow-lg backdrop-blur-sm">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -63,64 +86,64 @@
         {% endwith %}
 
         <!-- Formulário Principal -->
-        <form method="POST" action="/upload_fotos" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="/upload_fotos" enctype="multipart/form-data" class="space-y-8">
             
             <!-- Informações do Projeto -->
-            <div class="bg-white rounded-2xl p-6 shadow-xl">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">1</span>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-2xl font-bold text-slate-100 mb-6 flex items-center">
+                    <span class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg mr-4 shadow-lg">1</span>
                     Informações do Projeto
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Agência</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Nome da Agência</label>
                         <input type="text" name="nome" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Ex: São Paulo - Edifício Central">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contrato</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Contrato</label>
                         <input type="text" name="ctr" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Ex: 2025.7421.1507">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ordem de Serviço</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Ordem de Serviço</label>
                         <input type="text" name="os" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Ex: OS-2025-001">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Elaboração</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Data de Elaboração</label>
                         <input type="date" name="data_elb" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300">
                     </div>
                 </div>
             </div>
 
             <!-- Informações da Dependência -->
-            <div class="bg-white rounded-2xl p-6 shadow-xl">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <span class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">2</span>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-2xl font-bold text-slate-100 mb-6 flex items-center">
+                    <span class="bg-cyan-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg mr-4 shadow-lg">2</span>
                     Informações da Dependência
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Agência</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Agência</label>
                         <input type="text" name="ag" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Nome da agência">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Dependência</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Nome da Dependência</label>
                         <input type="text" name="nome_dependencia" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Nome da dependência">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">UF</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">UF</label>
                         <select name="uf" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300">
                             <option value="">Selecione o estado...</option>
                             <option value="AC">Acre</option>
                             <option value="AL">Alagoas</option>
@@ -152,9 +175,9 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Relatório</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Tipo de Relatório</label>
                         <select name="tipo" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                                class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300">
                             <option value="">Selecione o tipo...</option>
                             <option value="Preventivo">Preventivo</option>
                             <option value="Corretivo">Corretivo</option>
@@ -162,52 +185,52 @@
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Endereço</label>
                         <input type="text" name="end" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Endereço completo da dependência">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Atendimento</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Data de Atendimento</label>
                         <input type="date" name="data_att" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300">
                     </div>
                 </div>
             </div>
 
             <!-- Responsáveis -->
-            <div class="bg-white rounded-2xl p-6 shadow-xl">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <span class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">3</span>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-2xl font-bold text-slate-100 mb-6 flex items-center">
+                    <span class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg mr-4 shadow-lg">3</span>
                     Responsáveis
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsável da Dependência</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Responsável da Dependência</label>
                         <input type="text" name="resp_dep" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Nome do responsável">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsável Técnico</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Responsável Técnico</label>
                         <input type="text" name="resp_tec" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                               class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300"
                                placeholder="Nome do responsável técnico">
                     </div>
                 </div>
             </div>
 
             <!-- Seleção de Arquivos -->
-            <div class="bg-white rounded-2xl p-6 shadow-xl">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <span class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">4</span>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-2xl font-bold text-slate-100 mb-6 flex items-center">
+                    <span class="bg-violet-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg mr-4 shadow-lg">4</span>
                     Modelo e Fotos
                 </h3>
-                <div class="space-y-4">
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Selecione o Modelo</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">Selecione o Modelo</label>
                         <select name="modelo" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                                class="input-dark w-full px-4 py-4 rounded-xl focus:outline-none transition-all duration-300">
                             <option value="">Escolha um modelo...</option>
                             {% for modelo in modelos %}
                                 <option value="{{ modelo }}">{{ modelo.replace('.docx', '') }}</option>
@@ -216,26 +239,26 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📁 Selecione a Pasta de Fotos</label>
-                        <div class="custom-file-upload border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                        <label class="block text-sm font-semibold text-slate-300 mb-3">📁 Selecione a Pasta de Fotos</label>
+                        <div class="custom-file-upload border-2 border-dashed rounded-xl p-10 text-center">
                             <input type="file" id="fotos" name="pasta_fotos" 
                                    webkitdirectory directory multiple accept="image/*" 
                                    required class="hidden">
                             <label for="fotos" class="cursor-pointer">
-                                <div class="text-6xl mb-4">📂</div>
-                                <p class="text-lg font-medium text-gray-700 mb-2">Clique ou arraste a pasta aqui</p>
-                                <p class="text-sm text-gray-500">Formatos aceitos: JPG, PNG, JPEG</p>
+                                <div class="text-6xl mb-6 text-slate-400">📂</div>
+                                <p class="text-xl font-semibold text-slate-200 mb-3">Clique ou arraste a pasta aqui</p>
+                                <p class="text-sm text-slate-400">Formatos aceitos: JPG, PNG, JPEG</p>
                             </label>
-                            <div id="file-count" class="mt-4 p-3 bg-blue-100 rounded-lg hidden">
-                                <p class="text-blue-800 font-medium"></p>
+                            <div id="file-count" class="mt-6 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30 hidden">
+                                <p class="text-blue-300 font-semibold"></p>
                             </div>
                         </div>
-                        <div class="mt-3 p-4 bg-blue-50 rounded-lg">
+                        <div class="mt-4 p-6 bg-slate-800/50 rounded-xl border border-slate-600/30">
                             <div class="flex items-start">
-                                <span class="text-blue-500 mr-2">💡</span>
-                                <div class="text-sm text-blue-800">
-                                    <p class="font-medium mb-1">Dica: Selecione uma pasta que contenha suas fotos organizadas em subpastas.</p>
-                                    <ul class="list-disc list-inside space-y-1 text-xs">
+                                <span class="text-blue-400 mr-3 text-xl">💡</span>
+                                <div class="text-sm text-slate-300">
+                                    <p class="font-semibold mb-2">Dica: Selecione uma pasta que contenha suas fotos organizadas em subpastas.</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs text-slate-400">
                                         <li>A estrutura de pastas será mantida no relatório</li>
                                         <li>Exemplo: Pasta Principal → Área Externa → Detalhes → fotos.jpg</li>
                                     </ul>
@@ -249,34 +272,34 @@
             <!-- Botão de Envio -->
             <div class="text-center">
                 <button type="submit" 
-                        class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform transition duration-300 hover:scale-105">
-                    <span class="mr-2">🚀</span> Gerar Relatório Profissional
+                        class="btn-primary text-white px-12 py-5 rounded-xl font-bold text-xl shadow-2xl hover:shadow-blue-500/25 transform transition duration-300 hover:scale-105">
+                    <span class="mr-3">🚀</span> Gerar Relatório Profissional
                 </button>
             </div>
         </form>
 
         <!-- Features Section -->
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
-                <div class="text-4xl mb-4">⚡</div>
-                <h4 class="font-bold text-gray-800 mb-2">Processamento Automático</h4>
-                <p class="text-sm text-gray-600">Organização sistemática das fotos seguindo a estrutura de pastas</p>
+        <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card-dark rounded-2xl p-8 shadow-2xl text-center border border-slate-600/30">
+                <div class="text-5xl mb-6">⚡</div>
+                <h4 class="font-bold text-slate-100 text-xl mb-3">Processamento Automático</h4>
+                <p class="text-sm text-slate-400">Organização sistemática das fotos seguindo a estrutura de pastas</p>
             </div>
-            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
-                <div class="text-4xl mb-4">📋</div>
-                <h4 class="font-bold text-gray-800 mb-2">Relatórios Profissionais</h4>
-                <p class="text-sm text-gray-600">Documentos formatados profissionalmente com sua marca</p>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl text-center border border-slate-600/30">
+                <div class="text-5xl mb-6">📋</div>
+                <h4 class="font-bold text-slate-100 text-xl mb-3">Relatórios Profissionais</h4>
+                <p class="text-sm text-slate-400">Documentos formatados profissionalmente com sua marca</p>
             </div>
-            <div class="bg-white rounded-2xl p-6 shadow-xl text-center">
-                <div class="text-4xl mb-4">⏱️</div>
-                <h4 class="font-bold text-gray-800 mb-2">Economia de Tempo</h4>
-                <p class="text-sm text-gray-600">Processo que levaria horas agora é feito em minutos</p>
+            <div class="card-dark rounded-2xl p-8 shadow-2xl text-center border border-slate-600/30">
+                <div class="text-5xl mb-6">⏱️</div>
+                <h4 class="font-bold text-slate-100 text-xl mb-3">Economia de Tempo</h4>
+                <p class="text-sm text-slate-400">Processo que levaria horas agora é feito em minutos</p>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-12">
-            <p class="text-white text-sm opacity-75">
+        <div class="text-center mt-16">
+            <p class="text-slate-400 text-sm">
                 DEV: Thiago Nascimento
             </p>
         </div>
@@ -298,17 +321,17 @@
 
         // Animar entrada dos cards
         window.addEventListener('load', function() {
-            const cards = document.querySelectorAll('.bg-white');
+            const cards = document.querySelectorAll('.card-dark');
             cards.forEach((card, index) => {
                 setTimeout(() => {
                     card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    card.style.transition = 'all 0.6s ease';
+                    card.style.transform = 'translateY(30px)';
+                    card.style.transition = 'all 0.8s ease';
                     setTimeout(() => {
                         card.style.opacity = '1';
                         card.style.transform = 'translateY(0)';
                     }, 100);
-                }, index * 150);
+                }, index * 200);
             });
         });
     </script>
