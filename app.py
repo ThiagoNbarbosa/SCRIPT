@@ -34,14 +34,31 @@ def upload_fotos():
     
     files = request.files.getlist('pasta_fotos')
     modelo_selecionado = request.form.get('modelo')
-    nome_projeto = request.form.get('nome_projeto', 'Projeto')
+    
+    # Coletar todos os dados do formulário
+    dados_projeto = {
+        'nome': request.form.get('nome', 'Projeto'),
+        'contrato': request.form.get('contrato', ''),
+        'ordem_servico': request.form.get('ordem_servico', ''),
+        'responsavel_elaboracao': request.form.get('responsavel_elaboracao', ''),
+        'data_elaboracao': request.form.get('data_elaboracao', ''),
+        'agencia': request.form.get('agencia', ''),
+        'nome_dependencia': request.form.get('nome_dependencia', ''),
+        'uf': request.form.get('uf', ''),
+        'tipo_relatorio': request.form.get('tipo_relatorio', ''),
+        'data_atendimento': request.form.get('data_atendimento', ''),
+        'endereco': request.form.get('endereco', ''),
+        'responsavel_dependencia': request.form.get('responsavel_dependencia', ''),
+        'responsavel_tecnico': request.form.get('responsavel_tecnico', ''),
+        'responsavel_empresa': request.form.get('responsavel_empresa', '')
+    }
     
     if not modelo_selecionado:
         flash('Selecione um modelo')
         return redirect(url_for('index'))
     
     # Criar diretório temporário mantendo a estrutura original
-    pasta_fotos = os.path.join(UPLOAD_FOLDER, secure_filename(nome_projeto))
+    pasta_fotos = os.path.join(UPLOAD_FOLDER, secure_filename(dados_projeto['nome']))
     os.makedirs(pasta_fotos, exist_ok=True)
     
     # Salvar arquivos mantendo a estrutura de pastas
@@ -61,14 +78,15 @@ def upload_fotos():
     
     # Gerar relatório
     modelo_path = os.path.join(MODELOS_FOLDER, modelo_selecionado)
-    nome_arquivo_saida = f"RELATÓRIO FOTOGRÁFICO - {nome_projeto} - LEVANTAMENTO PREVENTIVO.docx"
+    tipo_relatorio = dados_projeto['tipo_relatorio'].upper() if dados_projeto['tipo_relatorio'] else 'PREVENTIVO'
+    nome_arquivo_saida = f"RELATÓRIO FOTOGRÁFICO - {dados_projeto['nome']} - LEVANTAMENTO {tipo_relatorio}.docx"
     arquivo_saida = os.path.join(UPLOAD_FOLDER, nome_arquivo_saida)
     
     # Processar estrutura de pastas e imagens
     conteudo = processar_estrutura_pastas(pasta_fotos)
     
     try:
-        contador_imagens = inserir_conteudo(modelo_path, conteudo, arquivo_saida)
+        contador_imagens = inserir_conteudo(modelo_path, conteudo, arquivo_saida, dados_projeto)
         flash(f'Relatório gerado com sucesso! {contador_imagens} imagens inseridas.')
         return send_file(arquivo_saida, as_attachment=True, download_name=nome_arquivo_saida)
     except Exception as e:
