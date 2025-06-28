@@ -2,7 +2,8 @@
 import os
 from docx import Document
 from docx.shared import Cm, Pt
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_BREAK
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.enum.text import WD_BREAK
 from PIL import Image, UnidentifiedImageError
 
 PASTAS_TEXTO_NORMAL = ["- Detalhes", "- Vista ampla"]

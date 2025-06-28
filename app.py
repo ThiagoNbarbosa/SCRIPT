@@ -150,7 +150,10 @@ def upload_fotos():
         flash('O arquivo enviado não é um arquivo ZIP válido.')
         return redirect(url_for('index'))
     except Exception as e:
-        flash(f'Ocorreu um erro ao processar o arquivo: {e}')
+        print(f"Erro detalhado: {e}")
+        import traceback
+        traceback.print_exc()
+        flash(f'Ocorreu um erro ao processar o arquivo: {str(e)}')
         return redirect(url_for('index'))
     finally:
         # Limpar o diretório temporário
