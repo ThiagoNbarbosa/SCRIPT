@@ -21,58 +21,64 @@ def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
 
     # --- Nova Lógica: Substituir placeholders com dados do formulário ---
     if campos:
+        # Criar mapeamento de placeholders para valores
+        placeholders_substituidos = set()
+        
+        def substituir_texto_preservando_formatacao(runs, texto_completo, key, value):
+            """Substitui placeholder preservando formatação existente"""
+            placeholder = f'{{{{{key.lower()}}}}}'
+            if placeholder in texto_completo and placeholder not in placeholders_substituidos:
+                placeholders_substituidos.add(placeholder)
+                
+                # Encontrar em qual run está o placeholder
+                for run in runs:
+                    if placeholder in run.text:
+                        # Substituir apenas o placeholder, preservando formatação
+                        run.text = run.text.replace(placeholder, str(value))
+                        # Aplicar formatação específica apenas ao texto substituído
+                        run.font.name = "Calibri"
+                        run.font.size = Pt(11)
+                        break
+        
         # Substituir em parágrafos
         for p in doc.paragraphs:
+            texto_paragrafo = p.text
             for key, value in campos.items():
-                placeholder = f'{{{{{key.lower()}}}}}'
-                if placeholder in p.text:
-                    # Limpar o parágrafo e recriar com formatação
-                    p.clear()
-                    run = p.add_run(str(value))
-                    run.font.name = "Calibri"
-                    run.font.size = Pt(11)
-                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
+            # Aplicar alinhamento se houve substituição
+            placeholder_pattern = '{{' + '|'.join([k.lower() for k in campos.keys()]) + '}}'
+            if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
+                p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         
         # Substituir em tabelas
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
                     for p in cell.paragraphs:
+                        texto_paragrafo = p.text
                         for key, value in campos.items():
-                            placeholder = f'{{{{{key.lower()}}}}}'
-                            if placeholder in p.text:
-                                # Limpar o parágrafo e recriar com formatação
-                                p.clear()
-                                run = p.add_run(str(value))
-                                run.font.name = "Calibri"
-                                run.font.size = Pt(11)
-                                p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                            substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
+                        # Aplicar alinhamento se houve substituição
+                        if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
+                            p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         
         # Substituir em cabeçalhos e rodapés
         for section in doc.sections:
             # Cabeçalho
             for p in section.header.paragraphs:
+                texto_paragrafo = p.text
                 for key, value in campos.items():
-                    placeholder = f'{{{{{key.lower()}}}}}'
-                    if placeholder in p.text:
-                        # Limpar o parágrafo e recriar com formatação
-                        p.clear()
-                        run = p.add_run(str(value))
-                        run.font.name = "Calibri"
-                        run.font.size = Pt(11)
-                        p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
+                if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
+                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             
             # Rodapé
             for p in section.footer.paragraphs:
+                texto_paragrafo = p.text
                 for key, value in campos.items():
-                    placeholder = f'{{{{{key.lower()}}}}}'
-                    if placeholder in p.text:
-                        # Limpar o parágrafo e recriar com formatação
-                        p.clear()
-                        run = p.add_run(str(value))
-                        run.font.name = "Calibri"
-                        run.font.size = Pt(11)
-                        p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
+                if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
+                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     # --- Fim da Nova Lógica ---
 
     for i, paragrafo in enumerate(doc.paragraphs):
