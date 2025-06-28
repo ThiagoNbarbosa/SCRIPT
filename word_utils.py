@@ -1,3 +1,4 @@
+
 import os
 from docx import Document
 from docx.shared import Cm, Pt
@@ -11,11 +12,47 @@ def aplicar_estilo(run, tamanho, negrito=False):
     run.font.size = Pt(tamanho)
     run.bold = negrito
 
-def inserir_conteudo(modelo_path, conteudo, output_path):
+def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
     doc = Document(modelo_path)
     contador_imagens = 0
     conteudo_processado = False
     paragrafo_insercao_index = None
+
+    # --- Nova Lógica: Substituir placeholders com dados do formulário ---
+    if campos:
+        # Substituir em parágrafos
+        for p in doc.paragraphs:
+            for key, value in campos.items():
+                placeholder = f'{{{{{key.lower()}}}}}'
+                if placeholder in p.text:
+                    p.text = p.text.replace(placeholder, str(value))
+        
+        # Substituir em tabelas
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for p in cell.paragraphs:
+                        for key, value in campos.items():
+                            placeholder = f'{{{{{key.lower()}}}}}'
+                            if placeholder in p.text:
+                                p.text = p.text.replace(placeholder, str(value))
+        
+        # Substituir em cabeçalhos e rodapés
+        for section in doc.sections:
+            # Cabeçalho
+            for p in section.header.paragraphs:
+                for key, value in campos.items():
+                    placeholder = f'{{{{{key.lower()}}}}}'
+                    if placeholder in p.text:
+                        p.text = p.text.replace(placeholder, str(value))
+            
+            # Rodapé
+            for p in section.footer.paragraphs:
+                for key, value in campos.items():
+                    placeholder = f'{{{{{key.lower()}}}}}'
+                    if placeholder in p.text:
+                        p.text = p.text.replace(placeholder, str(value))
+    # --- Fim da Nova Lógica ---
 
     for i, paragrafo in enumerate(doc.paragraphs):
         if "{{start_here}}" in paragrafo.text:
@@ -51,13 +88,13 @@ def inserir_conteudo(modelo_path, conteudo, output_path):
             conteudo_processado = True
 
         elif isinstance(item, dict):
-            if 'imagem' in item:
-                imagem_path = item["imagem"]
-                if os.path.exists(imagem_path) and os.path.getsize(imagem_path) > 0:
+            if 'image_path' in item:
+                image_path = item['image_path']
+                if os.path.exists(image_path) and os.path.getsize(image_path) > 0:
                     try:
                         # Inserção da imagem (sem legenda)
                         p = doc.paragraphs[paragrafo_insercao_index].insert_paragraph_before('')
-                        with Image.open(imagem_path) as img:
+                        with Image.open(image_path) as img:
                             largura_original, altura_original = img.size
                             altura_desejada_cm = 10
                             proporcao = altura_desejada_cm / altura_original * 2.54
@@ -65,7 +102,7 @@ def inserir_conteudo(modelo_path, conteudo, output_path):
 
                             run = p.add_run()
                             run.add_picture(
-                                imagem_path,
+                                image_path,
                                 width=Cm(largura_proporcional_cm),
                                 height=Cm(altura_desejada_cm)
                             )
@@ -74,11 +111,11 @@ def inserir_conteudo(modelo_path, conteudo, output_path):
                             conteudo_processado = True
 
                     except UnidentifiedImageError:
-                        print(f"Erro: Formato de imagem não reconhecido: {imagem_path}")
+                        print(f"Erro: Formato de imagem não reconhecido: {image_path}")
                     except Exception as e:
-                        print(f"Erro ao inserir imagem '{imagem_path}': {e}")
+                        print(f"Erro ao inserir imagem '{image_path}': {e}")
                 else:
-                    print(f"Erro: Arquivo de imagem inválido: {imagem_path}")
+                    print(f"Erro: Arquivo de imagem inválido: {image_path}")
 
             elif 'quebra_pagina' in item:
                 doc.paragraphs[paragrafo_insercao_index].insert_paragraph_before('').add_run().add_break(WD_BREAK.PAGE)

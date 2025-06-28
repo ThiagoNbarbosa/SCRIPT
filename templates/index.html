@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -87,7 +86,7 @@
 
         <!-- Formulário Principal -->
         <form method="POST" action="/upload_fotos" enctype="multipart/form-data" class="space-y-8">
-            
+
             <!-- Informações do Projeto -->
             <div class="card-dark rounded-2xl p-8 shadow-2xl">
                 <h3 class="text-2xl font-bold text-slate-100 mb-6 flex items-center">
@@ -237,21 +236,22 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-semibold text-slate-300 mb-3">📁 Selecione a Pasta de Fotos</label>
-                        <div class="custom-file-upload border-2 border-dashed rounded-xl p-10 text-center">
-                            <input type="file" id="fotos" name="pasta_fotos" 
-                                   webkitdirectory directory multiple accept="image/*" 
-                                   required class="hidden">
-                            <label for="fotos" class="cursor-pointer">
-                                <div class="text-6xl mb-6 text-slate-400">📂</div>
-                                <p class="text-xl font-semibold text-slate-200 mb-3">Clique ou arraste a pasta aqui</p>
-                                <p class="text-sm text-slate-400">Formatos aceitos: JPG, PNG, JPEG</p>
-                            </label>
-                            <div id="file-count" class="mt-6 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30 hidden">
-                                <p class="text-blue-300 font-semibold"></p>
-                            </div>
+                        <label for="fotos" class="block text-sm font-semibold text-slate-300 mb-3">
+                            📁 Selecionar Arquivo ZIP de Fotos
+                        </label>
+                        <input type="file" 
+                               id="fotos" 
+                               name="pasta_fotos" 
+                               accept=".zip"
+                               class="hidden"
+                               required>
+                        <div class="custom-file-upload rounded-xl p-8 text-center cursor-pointer transition-all duration-300"
+                             onclick="document.getElementById('fotos').click()">
+                            <div class="text-4xl mb-4">📦</div>
+                            <p class="text-slate-300 text-lg font-medium">Clique para selecionar arquivo ZIP</p>
+                            <p class="text-slate-400 text-sm mt-2">Escolha o arquivo ZIP contendo suas fotos organizadas</p>
                         </div>
                         <div class="mt-4 p-6 bg-slate-800/50 rounded-xl border border-slate-600/30">
                             <div class="flex items-start">

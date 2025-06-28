@@ -1,11 +1,11 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 import os
 import tempfile
+import zipfile
+import shutil
 from interface import selecionar_pasta, selecionar_modelo
 from word_utils import inserir_conteudo
 from werkzeug.utils import secure_filename
-import zipfile
 from docx import Document
 
 app = Flask(__name__)
@@ -28,14 +28,26 @@ def index():
 
 @app.route('/upload_fotos', methods=['POST'])
 def upload_fotos():
-    # Verificar se uma pasta foi enviada
     if 'pasta_fotos' not in request.files:
-        flash('Nenhuma pasta selecionada')
+        flash('Nenhum arquivo enviado.')
         return redirect(url_for('index'))
-    
-    files = request.files.getlist('pasta_fotos')
+
+    uploaded_file = request.files['pasta_fotos']
     modelo_selecionado = request.form.get('modelo')
-    
+
+    if uploaded_file.filename == '':
+        flash('Nenhum arquivo selecionado.')
+        return redirect(url_for('index'))
+
+    if not modelo_selecionado:
+        flash('Nenhum modelo de relatório selecionado.')
+        return redirect(url_for('index'))
+
+    modelo_path = os.path.join(MODELOS_FOLDER, secure_filename(modelo_selecionado))
+    if not os.path.exists(modelo_path):
+        flash(f'Modelo "{modelo_selecionado}" não encontrado.')
+        return redirect(url_for('index'))
+
     # Capturar todos os campos do formulário
     campos = {
         'nome': request.form.get('nome', ''),
@@ -53,136 +65,97 @@ def upload_fotos():
         'resp_tec': request.form.get('resp_tec', ''),
         'empresa': 'Ygor Augusto Fernandes'  # Valor fixo
     }
-    
-    nome_projeto = campos['nome'] or 'Projeto'
-    
-    if not modelo_selecionado:
-        flash('Selecione um modelo')
-        return redirect(url_for('index'))
-    
-    # Criar diretório temporário mantendo a estrutura original
-    pasta_fotos = os.path.join(UPLOAD_FOLDER, secure_filename(nome_projeto))
-    os.makedirs(pasta_fotos, exist_ok=True)
-    
-    # Salvar arquivos mantendo a estrutura de pastas
-    for file in files:
-        if file.filename != '':
-            # Extrair o caminho relativo da pasta selecionada
-            filename = file.filename
-            # No Flask, o webkitRelativePath vem no filename quando webkitdirectory é usado
-            relative_path = filename
-            
-            # Criar o caminho completo mantendo a estrutura
-            file_path = os.path.join(pasta_fotos, secure_filename(relative_path))
-            dir_path = os.path.dirname(file_path)
-            
-            os.makedirs(dir_path, exist_ok=True)
-            file.save(file_path)
-    
-    # Gerar relatório
-    modelo_path = os.path.join(MODELOS_FOLDER, modelo_selecionado)
-    nome_arquivo_saida = f"RELATÓRIO FOTOGRÁFICO - {nome_projeto} - LEVANTAMENTO PREVENTIVO.docx"
-    arquivo_saida = os.path.join(UPLOAD_FOLDER, nome_arquivo_saida)
-    
-    # Processar estrutura de pastas e imagens
-    conteudo = processar_estrutura_pastas(pasta_fotos)
-    
+
+    temp_dir = None
     try:
-        contador_imagens = inserir_conteudo(modelo_path, conteudo, arquivo_saida)
-        
-        # Substituir placeholders no documento gerado
-        substituir_placeholders(arquivo_saida, campos)
-        
+        # Criar um diretório temporário para descompactar o ZIP
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, secure_filename(uploaded_file.filename))
+        uploaded_file.save(zip_path)
+
+        # Descompactar o arquivo ZIP
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+
+        # Encontrar a pasta raiz dentro do ZIP
+        extracted_contents = os.listdir(temp_dir)
+        pasta_raiz_processamento = temp_dir
+
+        # Se há apenas uma pasta, usar ela como raiz
+        if len(extracted_contents) == 1 and os.path.isdir(os.path.join(temp_dir, extracted_contents[0])):
+            pasta_raiz_processamento = os.path.join(temp_dir, extracted_contents[0])
+
+        # --- Lógica de Leitura de Pastas e Títulos (adaptada de auto.py) ---
+        conteudo = []
+        nome_pasta_raiz_original = os.path.basename(pasta_raiz_processamento.strip(os.sep))
+
+        for root, dirs, files in os.walk(pasta_raiz_processamento):
+            # Ordenar subdiretórios apenas no nível da pasta raiz de processamento
+            if root == pasta_raiz_processamento:
+                dirs.sort(key=lambda x: (ORDEM_PASTAS.index(x) if x in ORDEM_PASTAS else len(ORDEM_PASTAS), x))
+
+            # Calcular o nível da pasta em relação à pasta raiz de processamento
+            rel_path = os.path.relpath(root, pasta_raiz_processamento)
+            path_parts = []
+            if rel_path != '.':  # Evita que o diretório raiz seja dividido em partes vazias
+                path_parts = rel_path.split(os.sep)
+
+            nivel = len(path_parts)
+
+            # Adicionar títulos de pastas
+            if nivel == 0 and rel_path == '.':  # A própria pasta raiz de processamento
+                # Não adicionamos a pasta raiz como título, pois o relatório é sobre ela
+                pass
+            elif nivel == 1:
+                conteudo.append(path_parts[0])
+            elif nivel == 2:
+                conteudo.append(f"»{path_parts[1]}")
+            elif nivel == 3:
+                conteudo.append(f"»»{path_parts[2]}")
+            else:
+                # Para níveis mais profundos
+                if path_parts:  # Garante que path_parts não está vazio
+                    conteudo.append(f"»»»- {path_parts[-1]}")
+
+            # Adicionar caminhos das imagens
+            arquivos_imagens = [
+                os.path.join(root, file)
+                for file in files
+                if file.lower().endswith(('.png', '.jpg', '.jpeg'))
+            ]
+            arquivos_imagens.sort()  # Garante uma ordem consistente das imagens
+
+            # Adicionar imagens como dicionários para compatibilidade com word_utils.py
+            for imagem_path in arquivos_imagens:
+                conteudo.append({"image_path": imagem_path})
+
+            # Adicionar quebra de página se houver imagens
+            if arquivos_imagens:
+                conteudo.append({"quebra_pagina": True})
+
+        # --- Fim da Lógica de Leitura de Pastas e Títulos ---
+
+        # Gerar o nome do arquivo de saída
+        nome_projeto = campos['nome'] or nome_pasta_raiz_original
+        output_filename = f"RELATÓRIO FOTOGRÁFICO - {nome_projeto} - LEVANTAMENTO PREVENTIVO.docx"
+        output_path = os.path.join(UPLOAD_FOLDER, output_filename)
+
+        # Inserir conteúdo no modelo
+        contador_imagens = inserir_conteudo(modelo_path, conteudo, output_path, campos)
+
         flash(f'Relatório gerado com sucesso! {contador_imagens} imagens inseridas.')
-        return send_file(arquivo_saida, as_attachment=True, download_name=nome_arquivo_saida)
-    except Exception as e:
-        flash(f'Erro ao gerar relatório: {str(e)}')
+        return send_file(output_path, as_attachment=True, download_name=output_filename)
+
+    except zipfile.BadZipFile:
+        flash('O arquivo enviado não é um arquivo ZIP válido.')
         return redirect(url_for('index'))
-
-def processar_estrutura_pastas(pasta_raiz):
-    conteudo = []
-
-    for root, dirs, files in os.walk(pasta_raiz):
-        if root == pasta_raiz:
-            dirs.sort(key=lambda x: (ORDEM_PASTAS.index(x) if x in ORDEM_PASTAS else len(ORDEM_PASTAS), x))
-
-        path_parts = os.path.relpath(root, pasta_raiz).split(os.sep)
-        nivel = len(path_parts)
-
-        if nivel == 1:
-            conteudo.append(path_parts[0])
-        elif nivel == 2:
-            conteudo.append(f"»{path_parts[1]}")
-        elif nivel == 3:
-            conteudo.append(f"»»{path_parts[2]}")
-        else:
-            conteudo.append(f"»»»- {path_parts[-1]}")
-
-        arquivos_imagens = [
-            os.path.join(root, file)
-            for file in files
-            if file.lower().endswith(('.png', '.jpg', '.jpeg'))
-        ]
-        arquivos_imagens.sort(key=os.path.getctime)
-
-        for imagem_path in arquivos_imagens:
-            conteudo.append({"imagem": imagem_path})
-
-        conteudo.append({"quebra_pagina": True})
-
-    return conteudo
-
-def substituir_placeholders(documento_path, campos):
-    """Substitui os placeholders no documento Word pelos valores dos campos"""
-    doc = Document(documento_path)
-    
-    # Dicionário de mapeamento dos placeholders
-    placeholders = {
-        '{{nome}}': campos.get('nome', ''),
-        '{{ctr}}': campos.get('ctr', ''),
-        '{{os}}': campos.get('os', ''),
-        '{{elb}}': campos.get('elb', ''),
-        '{{data_elb}}': campos.get('data_elb', ''),
-        '{{ag}}': campos.get('ag', ''),
-        '{{nome_dependencia}}': campos.get('nome_dependencia', ''),
-        '{{uf}}': campos.get('uf', ''),
-        '{{tipo}}': campos.get('tipo', ''),
-        '{{data_att}}': campos.get('data_att', ''),
-        '{{end}}': campos.get('end', ''),
-        '{{resp_dep}}': campos.get('resp_dep', ''),
-        '{{resp_tec}}': campos.get('resp_tec', ''),
-        '{{empresa}}': campos.get('empresa', '')
-    }
-    
-    # Substituir placeholders em parágrafos
-    for paragrafo in doc.paragraphs:
-        for placeholder, valor in placeholders.items():
-            if placeholder in paragrafo.text:
-                paragrafo.text = paragrafo.text.replace(placeholder, valor)
-    
-    # Substituir placeholders em tabelas
-    for tabela in doc.tables:
-        for linha in tabela.rows:
-            for celula in linha.cells:
-                for placeholder, valor in placeholders.items():
-                    if placeholder in celula.text:
-                        celula.text = celula.text.replace(placeholder, valor)
-    
-    # Substituir placeholders em cabeçalhos e rodapés
-    for secao in doc.sections:
-        # Cabeçalho
-        for paragrafo in secao.header.paragraphs:
-            for placeholder, valor in placeholders.items():
-                if placeholder in paragrafo.text:
-                    paragrafo.text = paragrafo.text.replace(placeholder, valor)
-        
-        # Rodapé
-        for paragrafo in secao.footer.paragraphs:
-            for placeholder, valor in placeholders.items():
-                if placeholder in paragrafo.text:
-                    paragrafo.text = paragrafo.text.replace(placeholder, valor)
-    
-    doc.save(documento_path)
+    except Exception as e:
+        flash(f'Ocorreu um erro ao processar o arquivo: {e}')
+        return redirect(url_for('index'))
+    finally:
+        # Limpar o diretório temporário
+        if temp_dir and os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
