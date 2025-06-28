@@ -25,7 +25,12 @@ def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
             for key, value in campos.items():
                 placeholder = f'{{{{{key.lower()}}}}}'
                 if placeholder in p.text:
-                    p.text = p.text.replace(placeholder, str(value))
+                    # Limpar o parágrafo e recriar com formatação
+                    p.clear()
+                    run = p.add_run(str(value))
+                    run.font.name = "Calibri"
+                    run.font.size = Pt(11)
+                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         
         # Substituir em tabelas
         for table in doc.tables:
@@ -35,7 +40,12 @@ def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
                         for key, value in campos.items():
                             placeholder = f'{{{{{key.lower()}}}}}'
                             if placeholder in p.text:
-                                p.text = p.text.replace(placeholder, str(value))
+                                # Limpar o parágrafo e recriar com formatação
+                                p.clear()
+                                run = p.add_run(str(value))
+                                run.font.name = "Calibri"
+                                run.font.size = Pt(11)
+                                p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         
         # Substituir em cabeçalhos e rodapés
         for section in doc.sections:
@@ -44,14 +54,24 @@ def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
                 for key, value in campos.items():
                     placeholder = f'{{{{{key.lower()}}}}}'
                     if placeholder in p.text:
-                        p.text = p.text.replace(placeholder, str(value))
+                        # Limpar o parágrafo e recriar com formatação
+                        p.clear()
+                        run = p.add_run(str(value))
+                        run.font.name = "Calibri"
+                        run.font.size = Pt(11)
+                        p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             
             # Rodapé
             for p in section.footer.paragraphs:
                 for key, value in campos.items():
                     placeholder = f'{{{{{key.lower()}}}}}'
                     if placeholder in p.text:
-                        p.text = p.text.replace(placeholder, str(value))
+                        # Limpar o parágrafo e recriar com formatação
+                        p.clear()
+                        run = p.add_run(str(value))
+                        run.font.name = "Calibri"
+                        run.font.size = Pt(11)
+                        p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     # --- Fim da Nova Lógica ---
 
     for i, paragrafo in enumerate(doc.paragraphs):
