@@ -43,8 +43,17 @@ def upload_fotos():
         flash('Nenhum modelo de relatório selecionado.')
         return redirect(url_for('index'))
 
-    modelo_path = os.path.join(MODELOS_FOLDER, secure_filename(modelo_selecionado))
+    # Normalizar o nome do arquivo para evitar problemas com caracteres especiais
+    modelo_filename = modelo_selecionado.replace('ã', 'a').replace('ç', 'c').replace('ó', 'o')
+    modelo_path = os.path.join(MODELOS_FOLDER, modelo_filename)
+    
+    # Se não encontrar com normalização, tentar nome original
     if not os.path.exists(modelo_path):
+        modelo_path = os.path.join(MODELOS_FOLDER, modelo_selecionado)
+    
+    if not os.path.exists(modelo_path):
+        print(f"Modelo não encontrado: {modelo_path}")
+        print(f"Arquivos disponíveis: {os.listdir(MODELOS_FOLDER) if os.path.exists(MODELOS_FOLDER) else 'Pasta não existe'}")
         flash(f'Modelo "{modelo_selecionado}" não encontrado.')
         return redirect(url_for('index'))
 
@@ -68,14 +77,19 @@ def upload_fotos():
 
     temp_dir = None
     try:
+        print(f"Iniciando processamento do arquivo: {uploaded_file.filename}")
+        print(f"Modelo selecionado: {modelo_selecionado}")
+        
         # Criar um diretório temporário para descompactar o ZIP
         temp_dir = tempfile.mkdtemp()
         zip_path = os.path.join(temp_dir, secure_filename(uploaded_file.filename))
         uploaded_file.save(zip_path)
 
         # Descompactar o arquivo ZIP
+        print("Descompactando arquivo ZIP...")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
+        print("Arquivo descompactado com sucesso")
 
         # Encontrar a pasta raiz dentro do ZIP
         extracted_contents = os.listdir(temp_dir)
@@ -141,7 +155,9 @@ def upload_fotos():
         output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
         # Inserir conteúdo no modelo
+        print(f"Processando {len([item for item in conteudo if isinstance(item, dict) and 'image_path' in item])} imagens...")
         contador_imagens = inserir_conteudo(modelo_path, conteudo, output_path, campos)
+        print(f"Processamento concluído. Imagens inseridas: {contador_imagens}")
 
         flash(f'Relatório gerado com sucesso! {contador_imagens} imagens inseridas.')
         return send_file(output_path, as_attachment=True, download_name=output_filename)

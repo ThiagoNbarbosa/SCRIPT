@@ -307,16 +307,26 @@
 
     <script>
         document.getElementById('fotos').addEventListener('change', function(e) {
-            const fileCount = e.target.files.length;
-            const fileCountDiv = document.getElementById('file-count');
-            const fileCountText = fileCountDiv.querySelector('p');
-
-            if (fileCount > 0) {
-                fileCountDiv.classList.remove('hidden');
-                fileCountText.textContent = `📁 ${fileCount} arquivo(s) selecionado(s)`;
-            } else {
-                fileCountDiv.classList.add('hidden');
+            const fileName = e.target.files[0] ? e.target.files[0].name : '';
+            const uploadDiv = document.querySelector('.custom-file-upload');
+            
+            if (fileName) {
+                uploadDiv.innerHTML = `
+                    <div class="text-4xl mb-4">✅</div>
+                    <p class="text-green-300 text-lg font-medium">Arquivo selecionado: ${fileName}</p>
+                    <p class="text-slate-400 text-sm mt-2">Clique para alterar o arquivo</p>
+                `;
+                uploadDiv.style.borderColor = '#22c55e';
+                uploadDiv.style.background = 'rgba(34, 197, 94, 0.1)';
             }
+        });
+
+        // Feedback ao submeter formulário
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const button = document.querySelector('button[type="submit"]');
+            button.innerHTML = '<span class="mr-3">⏳</span> Processando... Aguarde';
+            button.disabled = true;
+            button.style.opacity = '0.7';
         });
 
         // Animar entrada dos cards
