@@ -13,7 +13,7 @@ app.secret_key = 'sua_chave_secreta_aqui'
 
 ORDEM_PASTAS = ["- Área externa", "- Área interna", "- Segundo piso"]
 UPLOAD_FOLDER = 'uploads'
-MODELOS_FOLDER = '01 - MODELOS'
+MODELOS_FOLDER = '01 - MODELOS - auto'
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
