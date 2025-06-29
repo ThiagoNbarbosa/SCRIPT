@@ -4,9 +4,77 @@ from docx import Document
 from docx.shared import Cm, Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.text import WD_BREAK
+from docx.oxml.shared import qn
 from PIL import Image, UnidentifiedImageError
 
 PASTAS_TEXTO_NORMAL = ["- Detalhes", "- Vista ampla"]
+
+def set_font_calibri(run, size=11):
+    run.font.name = 'Calibri'
+    run.font.size = Pt(size)
+    rFonts = run.font.element.get_or_add_rPr().get_or_add_rFonts()
+    rFonts.set(qn('w:eastAsia'), 'Calibri')
+    rFonts.set(qn('w:hAnsi'), 'Calibri')
+    rFonts.set(qn('w:cs'), 'Calibri')
+
+def replace_placeholder_in_paragraph(paragraph, placeholder, value):
+    if placeholder in paragraph.text:
+        # Store original runs and their properties
+        original_runs_data = []
+        for run in paragraph.runs:
+            original_runs_data.append({
+                'text': run.text,
+                'bold': run.bold,
+                'italic': run.italic,
+                'underline': run.underline,
+                'font_name': run.font.name,
+                'font_size': run.font.size.pt if run.font.size else None
+            })
+        
+        # Clear the paragraph and rebuild it
+        paragraph.clear()
+        for run_data in original_runs_data:
+            parts = run_data['text'].split(placeholder)
+            for i, part in enumerate(parts):
+                if part:
+                    new_run = paragraph.add_run(part)
+                    new_run.bold = run_data['bold']
+                    new_run.italic = run_data['italic']
+                    new_run.underline = run_data['underline']
+                    set_font_calibri(new_run, 11)
+                
+                if i < len(parts) - 1:
+                    value_run = paragraph.add_run(str(value))
+                    value_run.bold = run_data['bold']
+                    value_run.italic = run_data['italic']
+                    value_run.underline = run_data['underline']
+                    set_font_calibri(value_run, 11)
+
+def replace_all_placeholders(doc, campos):
+    """Substitui todos os placeholders no documento"""
+    for key, value in campos.items():
+        placeholder = f'{{{{{key.lower()}}}}}'
+        
+        # Substituir em parágrafos
+        for paragraph in doc.paragraphs:
+            replace_placeholder_in_paragraph(paragraph, placeholder, value)
+        
+        # Substituir em tabelas
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        replace_placeholder_in_paragraph(paragraph, placeholder, value)
+        
+        # Substituir em cabeçalhos e rodapés
+        for section in doc.sections:
+            # Cabeçalho
+            for paragraph in section.header.paragraphs:
+                replace_placeholder_in_paragraph(paragraph, placeholder, value)
+            
+            # Rodapé
+            for paragraph in section.footer.paragraphs:
+                replace_placeholder_in_paragraph(paragraph, placeholder, value)
 
 def aplicar_estilo(run, tamanho, negrito=False):
     run.font.name = "Arial"
@@ -19,67 +87,10 @@ def inserir_conteudo(modelo_path, conteudo, output_path, campos=None):
     conteudo_processado = False
     paragrafo_insercao_index = None
 
-    # --- Nova Lógica: Substituir placeholders com dados do formulário ---
+    # --- Substituir placeholders com dados do formulário ---
     if campos:
-        # Criar mapeamento de placeholders para valores
-        placeholders_substituidos = set()
-        
-        def substituir_texto_preservando_formatacao(runs, texto_completo, key, value):
-            """Substitui placeholder preservando formatação existente"""
-            placeholder = f'{{{{{key.lower()}}}}}'
-            if placeholder in texto_completo and placeholder not in placeholders_substituidos:
-                placeholders_substituidos.add(placeholder)
-                
-                # Encontrar em qual run está o placeholder
-                for run in runs:
-                    if placeholder in run.text:
-                        # Substituir apenas o placeholder, preservando formatação
-                        run.text = run.text.replace(placeholder, str(value))
-                        # Aplicar formatação específica apenas ao texto substituído
-                        run.font.name = "Calibri"
-                        run.font.size = Pt(11)
-                        break
-        
-        # Substituir em parágrafos
-        for p in doc.paragraphs:
-            texto_paragrafo = p.text
-            for key, value in campos.items():
-                substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
-            # Aplicar alinhamento se houve substituição
-            placeholder_pattern = '{{' + '|'.join([k.lower() for k in campos.keys()]) + '}}'
-            if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
-                p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        
-        # Substituir em tabelas
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    for p in cell.paragraphs:
-                        texto_paragrafo = p.text
-                        for key, value in campos.items():
-                            substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
-                        # Aplicar alinhamento se houve substituição
-                        if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
-                            p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        
-        # Substituir em cabeçalhos e rodapés
-        for section in doc.sections:
-            # Cabeçalho
-            for p in section.header.paragraphs:
-                texto_paragrafo = p.text
-                for key, value in campos.items():
-                    substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
-                if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
-                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            
-            # Rodapé
-            for p in section.footer.paragraphs:
-                texto_paragrafo = p.text
-                for key, value in campos.items():
-                    substituir_texto_preservando_formatacao(p.runs, texto_paragrafo, key, value)
-                if any(f'{{{{{k.lower()}}}}}' in texto_paragrafo for k in campos.keys()):
-                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    # --- Fim da Nova Lógica ---
+        replace_all_placeholders(doc, campos)
+    # --- Fim da substituição de placeholders ---
 
     for i, paragrafo in enumerate(doc.paragraphs):
         if "{{start_here}}" in paragrafo.text:

@@ -57,14 +57,13 @@ def upload_fotos():
         flash(f'Modelo "{modelo_selecionado}" não encontrado.')
         return redirect(url_for('index'))
 
-    # Capturar todos os campos do formulário
+    # Capturar todos os campos do formulário com base na nova interface
     campos = {
-        'nome': request.form.get('nome', ''),
         'ctr': request.form.get('ctr', ''),
         'os': request.form.get('os', ''),
-        'elb': 'Ygor Augusto Fernandes',  # Valor fixo
-        'data_elb': request.form.get('data_elb', ''),
         'ag': request.form.get('ag', ''),
+        'data_elb': request.form.get('data_elb', ''),
+        'nome': request.form.get('nome', ''),  # Usando nome para {{nome}}
         'nome_dependencia': request.form.get('nome_dependencia', ''),
         'uf': request.form.get('uf', ''),
         'tipo': request.form.get('tipo', ''),
@@ -72,7 +71,9 @@ def upload_fotos():
         'end': request.form.get('end', ''),
         'resp_dep': request.form.get('resp_dep', ''),
         'resp_tec': request.form.get('resp_tec', ''),
-        'empresa': 'Ygor Augusto Fernandes'  # Valor fixo
+        # Valores fixos
+        'elb': 'Ygor Augusto Fernandes',
+        'empresa': 'Ygor Augusto Fernandes'
     }
 
     temp_dir = None
