@@ -1,0 +1,73 @@
+	Prompt de Correção para Placeholders em Documentos Word 
+	Este prompt tem como objetivo fornecer as instruções necessárias para corrigir o preenchimento dos placeholders em seus documentos Word ( .docx ), garantindo que as informações da interface web sejam mapeadas corretamente, incluindo campos fixos e mantendo a formatação original (Calibri 11 e alinhamento). 
+As alterações serão focadas nos arquivos app.py e word_utils.py . 
+1. Instruções para app.py 
+	O arquivo app.py é responsável por coletar os dados do formulário da sua interface web e passá-los para a função que gera o documento Word. É crucial que os nomes dos campos do formulário ( request.form.get(...) ) correspondam exatamente aos placeholders que você tem no seu documento Word. 
+Ação: 
+	Revise a seção campos = { ... } dentro da função upload_files() no seu app.py . Certifique-se de que cada chave no dicionário campos (por exemplo, "ctr" , "os" , "ag" ) corresponde ao nome do placeholder no seu documento Word (por exemplo, {{ctr}} , {{os}} , {{ag}} ). 
+Além disso, garanta que os campos fixos elb e empresa estejam definidos conforme o exemplo abaixo:
+	# Capturar todos os campos do formulário com base na nova interface campos = { 
+'ctr': request.form.get('contrato', ''), 
+'os': request.form.get('ordem_servico', ''), 
+'ag': request.form.get('prefixo', ''), 
+'data_elb': request.form.get('data_elaboracao', ''), 
+	'nome': request.form.get('nome_agencia', ''), # Usando nome_agencia para {{nome}} 
+'uf': request.form.get('uf', ''), 
+'tipo': request.form.get('tipo_relatorio', ''), 
+'data_att': request.form.get('data_atendimento', ''), 
+'end': request.form.get('endereco_dependencia', ''), 
+'resp_dep': request.form.get('responsavel_dependencia', ''), 
+'resp_tec': request.form.get('responsavel_tecnico', ''), 
+# Valores fixos 
+'elb': 'Ygor Augusto Fernandes', 
+'empresa': 'Ygor Augusto Fernandes' 
+} 
+	Observação: O mapeamento nome: request.form.get('nome_agencia', '') foi sugerido com base na imagem da sua interface, onde o campo Nome da Agência parece ser o mais adequado para preencher o placeholder {{nome}} . Ajuste se necessário. 
+2. Instruções para word_utils.py 
+	O arquivo word_utils.py contém a lógica para abrir o documento Word, encontrar e substituir os placeholders, e inserir as imagens. As modificações aqui visam garantir que a formatação (Calibri 11 e alinhamento) seja mantida ao substituir os placeholders. 
+Ação: 
+	Substitua as funções set_font_calibri e replace_placeholder_in_paragraph no seu word_utils.py pelas versões abaixo. Estas versões foram aprimoradas para preservar a formatação existente do texto ao redor do placeholder e aplicar Calibri 11 ao texto inserido.
+def set_font_calibri(run, size=11): 
+run.font.name = 'Calibri' 
+run.font.size = Pt(size) 
+rFonts = run.font.element.get_or_add_rPr().get_or_add_rFonts() 
+rFonts.set(qn('w:eastAsia'), 'Calibri') 
+rFonts.set(qn('w:hAnsi'), 'Calibri') 
+rFonts.set(qn('w:cs'), 'Calibri') 
+def replace_placeholder_in_paragraph(paragraph, placeholder, value): if placeholder in paragraph.text: 
+# Store original runs and their properties 
+original_runs_data = [] 
+for run in paragraph.runs: 
+original_runs_data.append({ 
+'text': run.text, 
+'bold': run.bold, 
+'italic': run.italic, 
+'underline': run.underline, 
+'font_name': run.font.name, 
+'font_size': run.font.size.pt if run.font.size else None 
+}) 
+# Clear the paragraph and rebuild it 
+paragraph.clear() 
+for run_data in original_runs_data: 
+parts = run_data['text'].split(placeholder) 
+for i, part in enumerate(parts): 
+if part: 
+new_run = paragraph.add_run(part) 
+new_run.bold = run_data['bold'] 
+new_run.italic = run_data['italic'] 
+new_run.underline = run_data['underline'] 
+set_font_calibri(new_run, 11) 
+if i < len(parts) - 1: 
+value_run = paragraph.add_run(str(value)) 
+value_run.bold = run_data['bold'] 
+value_run.italic = run_data['italic'] 
+value_run.underline = run_data['underline'] 
+set_font_calibri(value_run, 11) 
+	Importante: A função replace_all_placeholders (que itera sobre parágrafos, tabelas, cabeçalhos e rodapés) e a função inserir_conteudo (que chama replace_all_placeholders ) devem permanecer como estão, pois elas já utilizam as funções set_font_calibri e replace_placeholder_in_paragraph . 
+3. Próximos Passos no Replit 
+1. Atualize os arquivos: Copie e cole os trechos de código fornecidos nos seus respectivos arquivos ( app.py e word_utils.py ) no ambiente Replit.
+2. Verifique as dependências: Certifique-se de que todas as bibliotecas necessárias ( Flask , python-docx , Pillow , Werkzeug ) estão instaladas no seu ambiente Replit. Você pode verificar e instalar via pip install -r requirements.txt ou individualmente. 
+3. Estrutura de Pastas: Confirme que as pastas uploads/ e 01 - MODELOS - auto/ existem na raiz do seu projeto Replit e que seus modelos .docx estão na pasta 01 - MODELOS - auto/ . 
+4. Execute a Aplicação: Inicie sua aplicação Flask no Replit. O Replit fornecerá uma URL para você testar as alterações. 
+Ao seguir estas instruções, você deve observar que os placeholders em seus documentos Word serão preenchidos corretamente, mantendo a fonte Calibri 11 e o alinhamento original, e os campos fixos elb e empresa serão inseridos conforme o esperado.
+ 
